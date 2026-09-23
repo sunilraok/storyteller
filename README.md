@@ -62,6 +62,7 @@ If Project Gutenberg is unreachable, download the plain-text files listed in
 |---|---|
 | `ANTHROPIC_API_KEY` | Required. Used for narration. |
 | `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Required. Google sign-in via Auth.js; the OAuth redirect URI is `<origin>/api/auth/callback/google`. |
+| `AUTH_TRUST_HOST=true` or `AUTH_URL` | Needed when self-hosting outside Vercel so Auth.js accepts the request host. |
 | `AUTH_ALLOWED_EMAILS` | Restricts sign-in to listed addresses or `@domains`. |
 | `AUTH_DEV_BYPASS=1` | Skips sign-in in local development (ignored in production builds). |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Required in production. Shared store for usage limits; without it the paid endpoints return 503 unless `ALLOW_IN_MEMORY_LIMITS=1` is set (single instance only). |
