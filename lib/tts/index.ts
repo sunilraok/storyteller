@@ -31,7 +31,7 @@ export async function synthesizeCached(text: string, lang: Lang, voice?: string)
 
   for (const [type, ext] of Object.entries(EXT)) {
     try {
-      return { audio: await fs.readFile(path.join(CACHE_DIR, `${key}.${ext}`)), contentType: type };
+      return { audio: await fs.readFile(path.join(/*turbopackIgnore: true*/ CACHE_DIR, `${key}.${ext}`)), contentType: type };
     } catch {
       // not cached in this format
     }
@@ -41,7 +41,7 @@ export async function synthesizeCached(text: string, lang: Lang, voice?: string)
   const ext = EXT[result.contentType];
   if (ext) {
     await fs.mkdir(CACHE_DIR, { recursive: true });
-    await fs.writeFile(path.join(CACHE_DIR, `${key}.${ext}`), result.audio).catch(() => {});
+    await fs.writeFile(path.join(/*turbopackIgnore: true*/ CACHE_DIR, `${key}.${ext}`), result.audio).catch(() => {});
   }
   return result;
 }

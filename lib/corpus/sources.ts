@@ -26,6 +26,7 @@ export interface SourceDef {
   gutenbergIds: number[];
   /** Label for a chapter unit in this work ("Section" for Ganguli, "Sarga" for Dutt). */
   chapterLabel: string;
+  chapterLabelKn: string;
   books: BookDef[];
 }
 
@@ -52,6 +53,7 @@ export const SOURCES: Record<WorkId, SourceDef> = {
     years: "1883–1896",
     gutenbergIds: [15474, 15475, 15476, 15477],
     chapterLabel: "Section",
+    chapterLabelKn: "ಅಧ್ಯಾಯ",
     books: [
       parva("adi", "Ādi Parva", "ಆದಿ ಪರ್ವ", "ADI"),
       parva("sabha", "Sabhā Parva", "ಸಭಾ ಪರ್ವ", "SABHA"),
@@ -81,6 +83,7 @@ export const SOURCES: Record<WorkId, SourceDef> = {
     years: "1891–1894",
     gutenbergIds: [57265, 57826, 60188, 62496],
     chapterLabel: "Sarga",
+    chapterLabelKn: "ಸರ್ಗ",
     books: [
       kanda("bala", "Bāla Kāṇḍa", "ಬಾಲ ಕಾಂಡ", "BALA"),
       kanda("ayodhya", "Ayodhyā Kāṇḍa", "ಅಯೋಧ್ಯಾ ಕಾಂಡ", "AYODHYA"),
