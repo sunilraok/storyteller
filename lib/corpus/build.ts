@@ -52,7 +52,7 @@ export function buildCorpus({ rawDir, dbPath, stories, sources = Object.values(S
         errors.push(`${src.work}: only ${parsed.sections.length} sections parsed (expected at least ${src.minSections})`);
       }
       const books = new Set(parsed.sections.map((s) => s.book));
-      const absent = src.books.filter((b) => !books.has(b.slug)).map((b) => b.slug);
+      const absent = src.books.filter((b) => !b.notInEdition && !books.has(b.slug)).map((b) => b.slug);
       if (absent.length) errors.push(`${src.work}: no sections found for ${absent.join(", ")}`);
     }
 

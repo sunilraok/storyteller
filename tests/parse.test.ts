@@ -101,3 +101,21 @@ describe("book boundaries across volumes", () => {
     expect(warnings.join("\n")).toMatch(/numbering restarted after adi/);
   });
 });
+
+describe("bare-number section headings (Ganguli Books 8–11)", () => {
+  const karna = `Karna-parva\n\nTranslated into English Prose from the Original Sanskrit Text\n\n1\n\nOm! Having bowed down unto Narayana, the first section of the Karna parva begins.\nA list follows:\n\n3\n\nstill belongs to section one, because 3 does not continue the sequence.\n\n2\n\nThe second section of the Karna parva, long enough to count as a section.[617]`;
+
+  it("splits sections on sequential bare numbers only", () => {
+    const { sections } = parseVolume("mahabharata", karna);
+    expect(sections.map((s) => `${s.book}:${s.section}`)).toEqual(["karna:1", "karna:2"]);
+    expect(sections[0].text).toContain("still belongs to section one");
+    expect(sections[1].text).not.toContain("[617]");
+  });
+
+  it("ignores bare numbers in books that use SECTION headings", () => {
+    const raw = `ADI PARVA\n\nSECTION I\n\nFirst section text that is long enough to be kept.\n\n2\n\nStill the first section, since this book uses SECTION headings.`;
+    const { sections } = parseVolume("mahabharata", raw);
+    expect(sections.map((s) => `${s.book}:${s.section}`)).toEqual(["adi:1"]);
+    expect(sections[0].text).toContain("Still the first section");
+  });
+});
