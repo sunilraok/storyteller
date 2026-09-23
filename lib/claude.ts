@@ -151,8 +151,45 @@ export interface FidelityIssue {
   reason: string;
 }
 
+/**
+ * Outcome of a fidelity check. Only a completed, successfully parsed response is
+ * "checked"; refusals, truncation and malformed output are "indeterminate" so they
+ * can never be shown as "all supported".
+ */
+export type FidelityResult =
+  | { status: "checked"; issues: FidelityIssue[] }
+  | { status: "indeterminate"; reason: string };
+
+const isIssue = (v: unknown): v is FidelityIssue =>
+  typeof v === "object" &&
+  v !== null &&
+  typeof (v as FidelityIssue).sentence === "string" &&
+  typeof (v as FidelityIssue).reason === "string";
+
+export function parseFidelityResponse(res: Pick<Anthropic.Message, "stop_reason" | "content">): FidelityResult {
+  if (res.stop_reason !== "end_turn") {
+    return { status: "indeterminate", reason: `verification did not complete (stop_reason: ${res.stop_reason})` };
+  }
+  const text = res.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("");
+  if (!text.trim()) return { status: "indeterminate", reason: "verification returned no output" };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { status: "indeterminate", reason: "verification output was not valid JSON" };
+  }
+  const unsupported = (parsed as { unsupported?: unknown })?.unsupported;
+  if (!Array.isArray(unsupported) || !unsupported.every(isIssue)) {
+    return { status: "indeterminate", reason: "verification output did not match the expected schema" };
+  }
+  return { status: "checked", issues: unsupported };
+}
+
 /** Ask a second model to flag narration sentences that the passages do not support. */
-export async function checkFidelity(sources: SourceRef[], narration: string): Promise<FidelityIssue[]> {
+export async function checkFidelity(sources: SourceRef[], narration: string): Promise<FidelityResult> {
   const res = await anthropic().messages.create({
     model: HELPER_MODEL,
     max_tokens: 8000,
@@ -201,7 +238,5 @@ ${narration}
       },
     ],
   });
-  if (res.stop_reason === "refusal") return [];
-  const text = res.content.find((b) => b.type === "text")?.text ?? '{"unsupported":[]}';
-  return (JSON.parse(text) as { unsupported: FidelityIssue[] }).unsupported;
+  return parseFidelityResponse(res);
 }

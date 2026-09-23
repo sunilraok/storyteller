@@ -25,5 +25,6 @@
   "error": "Something went wrong",
   "corpusNote": "Grounded in K. M. Ganguli's Mahābhārata (1883–96) and M. N. Dutt's Rāmāyaṇa (1891–94), both in the public domain.",
   "back": "All stories",
-  "audioError": "Audio is unavailable"
+  "audioError": "Audio is unavailable",
+  "fidelityUnknown": "Faithfulness could not be verified this time; treat the retelling as unchecked."
 }

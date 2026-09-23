@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Audience, FidelityIssue, NarrationEvent } from "@/lib/claude";
+import type { Audience, FidelityResult, NarrationEvent } from "@/lib/claude";
 import { t, type Lang } from "@/lib/i18n";
 import { readNdjson } from "@/lib/ndjson";
 import { AudioPlayer } from "./AudioPlayer";
@@ -23,9 +23,8 @@ export function Narrator({
   const [state, setState] = useState<NarrationState>(initialNarration);
   const [status, setStatus] = useState<Status>(autoStart ? "loading" : "idle");
   const [openSource, setOpenSource] = useState<number | null>(null);
-  const [fidelity, setFidelity] = useState<{ status: "idle" | "checking" | "done"; issues: FidelityIssue[] }>({
+  const [fidelity, setFidelity] = useState<{ status: "idle" } | { status: "checking" } | FidelityResult>({
     status: "idle",
-    issues: [],
   });
   const abortRef = useRef<AbortController | null>(null);
 
@@ -57,7 +56,7 @@ export function Narrator({
 
   function tell() {
     setState(initialNarration());
-    setFidelity({ status: "idle", issues: [] });
+    setFidelity({ status: "idle" });
     setOpenSource(null);
     setStatus("loading");
     void run(audience);
@@ -71,25 +70,32 @@ export function Narrator({
   }, []);
 
   async function verify() {
-    setFidelity({ status: "checking", issues: [] });
+    setFidelity({ status: "checking" });
     try {
       const res = await fetch("/api/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passageIds: state.sources.map((s) => s.id), narration: plainText(state.segments) }),
       });
-      const json = (await res.json()) as { issues?: FidelityIssue[]; error?: string };
+      const json = (await res.json().catch(() => ({}))) as Partial<FidelityResult> & { error?: string };
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
-      setFidelity({ status: "done", issues: json.issues ?? [] });
+      if (json.status === "checked" && Array.isArray(json.issues)) {
+        setFidelity({ status: "checked", issues: json.issues });
+      } else {
+        setFidelity({
+          status: "indeterminate",
+          reason: json.status === "indeterminate" && json.reason ? json.reason : "unexpected response",
+        });
+      }
     } catch (e) {
-      setFidelity({ status: "done", issues: [{ sentence: "", reason: (e as Error).message }] });
+      setFidelity({ status: "indeterminate", reason: (e as Error).message });
     }
   }
 
   const paragraphs = toParagraphs(state.segments);
   const text = plainText(state.segments);
   const busy = status === "loading" || status === "streaming";
-  const flagged = fidelity.issues.map((i) => i.sentence.trim()).filter(Boolean);
+  const flagged = fidelity.status === "checked" ? fidelity.issues.map((i) => i.sentence.trim()).filter(Boolean) : [];
 
   return (
     <section className="mt-6">
@@ -176,7 +182,12 @@ export function Narrator({
       )}
 
       {fidelity.status === "checking" && <p className="mt-3 animate-pulse text-sm text-muted">{t(lang, "checking")}</p>}
-      {fidelity.status === "done" &&
+      {fidelity.status === "indeterminate" && (
+        <p role="status" className="mt-3 rounded-lg border border-border p-3 text-sm">
+          ? {t(lang, "fidelityUnknown")} <span className="text-muted">({fidelity.reason})</span>
+        </p>
+      )}
+      {fidelity.status === "checked" &&
         (fidelity.issues.length === 0 ? (
           <p className="mt-3 text-sm">✓ {t(lang, "allSupported")}</p>
         ) : (

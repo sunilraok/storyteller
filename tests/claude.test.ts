@@ -60,3 +60,30 @@ describe("narrate", () => {
     expect(streamCalls[0]).toMatchObject({ fallbacks: "default", betas: ["server-side-fallback-2026-07-01"] });
   });
 });
+
+describe("parseFidelityResponse", () => {
+  const text = (t: string) => [{ type: "text" as const, text: t, citations: null }];
+  it("accepts only a completed, schema-valid response", async () => {
+    const { parseFidelityResponse } = await import("@/lib/claude");
+    expect(parseFidelityResponse({ stop_reason: "end_turn", content: text('{"unsupported":[]}') })).toEqual({
+      status: "checked",
+      issues: [],
+    });
+    expect(
+      parseFidelityResponse({ stop_reason: "end_turn", content: text('{"unsupported":[{"sentence":"s","reason":"r"}]}') }),
+    ).toEqual({ status: "checked", issues: [{ sentence: "s", reason: "r" }] });
+  });
+
+  it("reports refusals, truncation, empty and malformed output as indeterminate", async () => {
+    const { parseFidelityResponse } = await import("@/lib/claude");
+    const cases = [
+      { stop_reason: "refusal" as const, content: [] },
+      { stop_reason: "max_tokens" as const, content: text('{"unsupported":[') },
+      { stop_reason: "end_turn" as const, content: [] },
+      { stop_reason: "end_turn" as const, content: text("not json") },
+      { stop_reason: "end_turn" as const, content: text('{"unsupported":[{"sentence":1}]}') },
+      { stop_reason: "end_turn" as const, content: text("{}") },
+    ];
+    for (const c of cases) expect(parseFidelityResponse(c).status).toBe("indeterminate");
+  });
+});
