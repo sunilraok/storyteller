@@ -12,62 +12,79 @@ import { splitForSpeech } from "@/lib/text";
 export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Stops whichever playback run is current; each run installs its own. */
   const stopRef = useRef<() => void>(() => {});
 
   useEffect(() => () => stopRef.current(), []);
 
   async function play() {
+    stopRef.current();
     setError(null);
     setPlaying(true);
-    const chunks = splitForSpeech(text);
+
+    const ctrl = new AbortController();
+    const { signal } = ctrl;
     const audio = new Audio();
     const urls: string[] = [];
-    let stopped = false;
-    stopRef.current = () => {
-      stopped = true;
+    const stop = () => {
+      if (signal.aborted) return;
+      ctrl.abort();
       audio.pause();
+      audio.removeAttribute("src");
       window.speechSynthesis?.cancel();
       urls.forEach((u) => URL.revokeObjectURL(u));
-      setPlaying(false);
+      // Only reset the button if no newer run has taken over.
+      if (stopRef.current === stop) setPlaying(false);
     };
+    stopRef.current = stop;
 
     const fetchChunk = async (chunk: string): Promise<string | "fallback"> => {
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: chunk, lang }),
+        signal,
       });
       if (res.status === 501) return "fallback";
       if (!res.ok) {
         const { error } = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(error ?? `HTTP ${res.status}`);
       }
-      const url = URL.createObjectURL(await res.blob());
+      const blob = await res.blob();
+      signal.throwIfAborted();
+      const url = URL.createObjectURL(blob);
       urls.push(url);
       return url;
     };
 
     try {
+      const chunks = splitForSpeech(text);
       let next = fetchChunk(chunks[0]);
-      for (let i = 0; i < chunks.length && !stopped; i++) {
+      for (let i = 0; i < chunks.length; i++) {
         const url = await next;
+        signal.throwIfAborted();
         if (url === "fallback") {
-          await speakWithBrowser(chunks.slice(i), lang, () => stopped);
+          await speakWithBrowser(chunks.slice(i), lang, signal);
           break;
         }
-        if (i + 1 < chunks.length) next = fetchChunk(chunks[i + 1]);
+        if (i + 1 < chunks.length) {
+          next = fetchChunk(chunks[i + 1]);
+          next.catch(() => {}); // surfaced when awaited on the next iteration
+        }
         audio.src = url;
         await audio.play();
+        signal.throwIfAborted();
         await new Promise<void>((resolve, reject) => {
           audio.onended = () => resolve();
-          audio.onpause = () => resolve();
           audio.onerror = () => reject(new Error("playback failed"));
+          signal.addEventListener("abort", () => resolve(), { once: true });
         });
+        signal.throwIfAborted();
       }
     } catch (e) {
-      if (!stopped) setError((e as Error).message);
+      if (!signal.aborted) setError((e as Error).message);
     } finally {
-      stopRef.current();
+      stop();
     }
   }
 
@@ -88,7 +105,7 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
   );
 }
 
-function speakWithBrowser(chunks: string[], lang: Lang, isStopped: () => boolean): Promise<void> {
+function speakWithBrowser(chunks: string[], lang: Lang, signal: AbortSignal): Promise<void> {
   const synth = window.speechSynthesis;
   if (!synth) return Promise.reject(new Error("No TTS provider configured and no browser speech synthesis"));
   const code = LANGUAGES[lang].bcp47;
@@ -102,7 +119,7 @@ function speakWithBrowser(chunks: string[], lang: Lang, isStopped: () => boolean
       p.then(
         () =>
           new Promise<void>((resolve) => {
-            if (isStopped()) return resolve();
+            if (signal.aborted) return resolve();
             const u = new SpeechSynthesisUtterance(chunk);
             u.lang = code;
             if (voice) u.voice = voice;
