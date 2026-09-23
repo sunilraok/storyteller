@@ -11,6 +11,7 @@ import {
 } from "@/lib/claude";
 import { isLang } from "@/lib/i18n";
 import { ndjsonResponse } from "@/lib/ndjson";
+import { guard } from "@/lib/guard";
 import { getStory } from "@/lib/stories";
 
 export const runtime = "nodejs";
@@ -29,36 +30,51 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as Body;
   const lang = isLang(body.lang) ? body.lang : "kn";
   const audience: Audience = body.audience === "adult" ? "adult" : "child";
+  const story = body.storyId ? getStory(body.storyId) : undefined;
+  const question = body.question?.trim().slice(0, 500);
+  if (body.storyId && !story) return Response.json({ error: "Unknown story" }, { status: 404 });
+  if (!story && !question) return Response.json({ error: "Provide storyId or question" }, { status: 400 });
+
+  const g = await guard("narrate");
+  if (g instanceof Response) return g;
+  let handedOff = false;
 
   try {
     const db = corpus();
     let passages;
     let instruction: string;
 
-    if (body.storyId) {
-      const story = getStory(body.storyId);
-      if (!story) return Response.json({ error: "Unknown story" }, { status: 404 });
+    if (story) {
       const { work, book, from, to } = story.source;
       passages = getSections(db, work, book, from, to).slice(0, MAX_PASSAGES);
       instruction = storyInstruction(story.title.en, lang, audience);
-    } else if (body.question?.trim()) {
-      const question = body.question.trim().slice(0, 500);
-      const keywords = await searchKeywords(question);
-      passages = search(db, keywords || question, { limit: 8 });
-      instruction = questionInstruction(question, lang, audience);
     } else {
-      return Response.json({ error: "Provide storyId or question" }, { status: 400 });
+      const keywords = await searchKeywords(question!);
+      passages = search(db, keywords || question!, { limit: 8 });
+      instruction = questionInstruction(question!, lang, audience);
     }
 
     if (!passages.length) return Response.json({ error: "noPassages" }, { status: 404 });
 
-    return ndjsonResponse<NarrationEvent>(narrate(toSourceRefs(passages), instruction, req.signal), (e) => ({
-      type: "error",
-      message: errorMessage(e),
-    }));
+    handedOff = true;
+    return ndjsonResponse<NarrationEvent>(
+      releasing(narrate(toSourceRefs(passages), instruction, req.signal), g.release),
+      (e) => ({ type: "error", message: errorMessage(e) }),
+    );
   } catch (e) {
     const status = e instanceof CorpusMissingError ? 503 : e instanceof Anthropic.APIError ? 502 : 500;
     return Response.json({ error: errorMessage(e) }, { status });
+  } finally {
+    if (!handedOff) await g.release();
+  }
+}
+
+/** Free the caller's concurrency slot once the stream finishes, fails or is cancelled. */
+async function* releasing<T>(events: AsyncGenerator<T>, release: () => Promise<void>): AsyncGenerator<T> {
+  try {
+    yield* events;
+  } finally {
+    await release();
   }
 }
 

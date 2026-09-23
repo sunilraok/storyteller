@@ -1,4 +1,5 @@
 import { isLang } from "@/lib/i18n";
+import { guard } from "@/lib/guard";
 import { synthesizeCached, TtsNotConfiguredError } from "@/lib/tts";
 
 export const runtime = "nodejs";
@@ -12,13 +13,17 @@ export async function POST(req: Request) {
   if (!text?.trim() || text.length > 1000 || !isLang(lang)) {
     return Response.json({ error: "Provide text (≤1000 chars) and a supported lang" }, { status: 400 });
   }
+  const g = await guard("tts", text.trim().length);
+  if (g instanceof Response) return g;
   try {
     const { audio, contentType } = await synthesizeCached(text.trim(), lang, voice);
     return new Response(new Uint8Array(audio), {
-      headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=31536000, immutable" },
+      headers: { "Content-Type": contentType, "Cache-Control": "private, max-age=86400" },
     });
   } catch (e) {
     if (e instanceof TtsNotConfiguredError) return Response.json({ error: e.message }, { status: 501 });
     return Response.json({ error: (e as Error).message }, { status: 502 });
+  } finally {
+    await g.release();
   }
 }

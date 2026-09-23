@@ -20,15 +20,22 @@ beside the retelling.
    story in the chosen language, with citations that become footnotes.
 4. **Faithfulness check (optional).** A second model lists any sentence that
    the passages don't support, and the reader highlights it.
-5. **Audio.** The narration is split into sentences and spoken through
+5. **Access and limits.** Anyone can browse the story list. Narrating,
+   checking and listening all call paid APIs, so they require Google sign-in.
+   Each user has daily quotas and concurrency limits, and there is a global
+   daily budget on top. The counters live in Upstash Redis so they hold
+   across serverless instances.
+6. **Audio.** The narration is split into sentences and spoken through
    Sarvam AI (Bulbul) or Google Cloud TTS, with results cached on disk. If
-   neither is configured, the browser's own speech synthesis is used.
+   neither is configured, the browser's own speech synthesis is used. The
+   audio cache is capped at `TTS_CACHE_MAX_MB`; when it fills up, the least
+   recently used files are deleted.
 
 ## Setup
 
 ```bash
 npm install
-cp .env.example .env.local        # add ANTHROPIC_API_KEY, and SARVAM_API_KEY for Kannada audio
+cp .env.example .env.local        # add ANTHROPIC_API_KEY, Google OAuth, and SARVAM_API_KEY for Kannada audio
 npm run corpus:fetch              # download the source texts into corpus/raw/
 npm run corpus:ingest             # build data/corpus.db and check story pins
 npm run dev                       # http://localhost:3000
@@ -54,6 +61,12 @@ If Project Gutenberg is unreachable, download the plain-text files listed in
 | Variable | Purpose |
 |---|---|
 | `ANTHROPIC_API_KEY` | Required. Used for narration. |
+| `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` | Required. Google sign-in via Auth.js; the OAuth redirect URI is `<origin>/api/auth/callback/google`. |
+| `AUTH_ALLOWED_EMAILS` | Restricts sign-in to listed addresses or `@domains`. |
+| `AUTH_DEV_BYPASS=1` | Skips sign-in in local development (ignored in production builds). |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Required in production. Shared store for usage limits; without it the paid endpoints return 503 unless `ALLOW_IN_MEMORY_LIMITS=1` is set (single instance only). |
+| `LIMIT_*` | Per-user daily quotas, global daily budgets and concurrency limits (see `.env.example`). |
+| `TTS_CACHE_MAX_MB` | Size cap for the TTS audio cache (default 200). |
 | `CLAUDE_MODEL` | Narration model (default `claude-opus-5`). |
 | `CLAUDE_HELPER_MODEL` | Model for query rewriting and the faithfulness check (default `claude-sonnet-5`). |
 | `SARVAM_API_KEY` / `SARVAM_TTS_SPEAKER` | Sarvam AI Bulbul TTS (recommended for Kannada). |

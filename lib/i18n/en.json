@@ -26,5 +26,9 @@
   "corpusNote": "Grounded in K. M. Ganguli's Mahābhārata (1883–96) and M. N. Dutt's Rāmāyaṇa (1891–94), both in the public domain.",
   "back": "All stories",
   "audioError": "Audio is unavailable",
-  "fidelityUnknown": "Faithfulness could not be verified this time; treat the retelling as unchecked."
+  "fidelityUnknown": "Faithfulness could not be verified this time; treat the retelling as unchecked.",
+  "signIn": "Sign in with Google",
+  "signOut": "Sign out",
+  "signInRequired": "Please sign in with Google to hear stories.",
+  "quotaExceeded": "You have reached today's limit. Please come back tomorrow."
 }

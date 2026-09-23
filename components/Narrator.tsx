@@ -41,7 +41,10 @@ export function Narrator({
       });
       if (!res.ok) {
         const { error } = (await res.json().catch(() => ({}))) as { error?: string };
-        const message = error === "noPassages" ? t(lang, "noPassages") : (error ?? `HTTP ${res.status}`);
+        const message =
+          error === "noPassages" || error === "signInRequired" || error === "quotaExceeded"
+            ? t(lang, error)
+            : (error ?? `HTTP ${res.status}`);
         setState((s) => ({ ...s, done: true, error: message }));
         return;
       }
@@ -78,7 +81,10 @@ export function Narrator({
         body: JSON.stringify({ passageIds: state.sources.map((s) => s.id), narration: plainText(state.segments) }),
       });
       const json = (await res.json().catch(() => ({}))) as Partial<FidelityResult> & { error?: string };
-      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}`);
+      if (!res.ok) {
+        const known = json.error === "signInRequired" || json.error === "quotaExceeded";
+        throw new Error(known ? t(lang, json.error as "signInRequired" | "quotaExceeded") : (json.error ?? `HTTP ${res.status}`));
+      }
       if (json.status === "checked" && Array.isArray(json.issues)) {
         setFidelity({ status: "checked", issues: json.issues });
       } else {
@@ -136,7 +142,9 @@ export function Narrator({
       {status === "loading" && <p className="mt-6 animate-pulse text-muted">{t(lang, "loading")}</p>}
       {state.error && (
         <p role="alert" className="mt-6 rounded-lg border border-accent bg-accent-soft p-3 text-sm">
-          {t(lang, "error")}: {state.error}
+          {(["signInRequired", "quotaExceeded", "noPassages"] as const).some((k) => t(lang, k) === state.error)
+            ? state.error
+            : `${t(lang, "error")}: ${state.error}`}
         </p>
       )}
 

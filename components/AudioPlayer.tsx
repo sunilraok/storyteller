@@ -48,7 +48,8 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
       if (res.status === 501) return "fallback";
       if (!res.ok) {
         const { error } = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(error ?? `HTTP ${res.status}`);
+        const known = error === "signInRequired" || error === "quotaExceeded";
+        throw new Error(known ? t(lang, error) : (error ?? `HTTP ${res.status}`));
       }
       const blob = await res.blob();
       signal.throwIfAborted();
@@ -98,7 +99,7 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
       </button>
       {error && (
         <span className="text-xs text-muted" title={error}>
-          {t(lang, "audioError")}
+          {error === t(lang, "signInRequired") || error === t(lang, "quotaExceeded") ? error : t(lang, "audioError")}
         </span>
       )}
     </span>

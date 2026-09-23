@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { signIn, signOut } from "@/auth";
+import { currentCaller } from "@/lib/guard";
 import { LANGUAGES, t, type Lang } from "@/lib/i18n";
 
-export function Header({ lang, path }: { lang: Lang; path: string }) {
+export async function Header({ lang, path }: { lang: Lang; path: string }) {
+  const caller = await currentCaller();
+  const here = `${path}?lang=${lang}`;
   return (
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -27,6 +31,29 @@ export function Header({ lang, path }: { lang: Lang; path: string }) {
               </Link>
             ))}
           </span>
+          {caller ? (
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: here });
+              }}
+            >
+              <button className="text-muted hover:text-accent" title={caller.email ?? undefined}>
+                {t(lang, "signOut")}
+              </button>
+            </form>
+          ) : (
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google", { redirectTo: here });
+              }}
+            >
+              <button className="rounded-full border border-accent px-3 py-1 text-accent hover:bg-accent-soft">
+                {t(lang, "signIn")}
+              </button>
+            </form>
+          )}
         </nav>
       </div>
     </header>
