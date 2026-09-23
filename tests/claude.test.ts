@@ -87,3 +87,13 @@ describe("parseFidelityResponse", () => {
     for (const c of cases) expect(parseFidelityResponse(c).status).toBe("indeterminate");
   });
 });
+
+describe("claudeConfigured", () => {
+  it("requires a non-empty API key or auth token", async () => {
+    const { claudeConfigured } = await import("@/lib/claude");
+    expect(claudeConfigured({})).toBe(false);
+    expect(claudeConfigured({ ANTHROPIC_API_KEY: " " })).toBe(false);
+    expect(claudeConfigured({ ANTHROPIC_API_KEY: "sk-ant-x" })).toBe(true);
+    expect(claudeConfigured({ ANTHROPIC_AUTH_TOKEN: "t" })).toBe(true);
+  });
+});

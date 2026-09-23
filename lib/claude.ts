@@ -10,6 +10,14 @@ export const NARRATION_MODEL = process.env.CLAUDE_MODEL ?? "claude-opus-5";
 /** Cheaper model for query rewriting and the fidelity check. */
 export const HELPER_MODEL = process.env.CLAUDE_HELPER_MODEL ?? "claude-sonnet-5";
 
+export const MISSING_KEY_MESSAGE =
+  "The Claude API key is not configured. Set ANTHROPIC_API_KEY in .env.local and restart the server.";
+
+/** Whether the server has credentials for the Claude API. */
+export function claudeConfigured(env: Record<string, string | undefined> = process.env): boolean {
+  return !!(env.ANTHROPIC_API_KEY?.trim() || env.ANTHROPIC_AUTH_TOKEN?.trim());
+}
+
 let client: Anthropic | null = null;
 export function anthropic(): Anthropic {
   client ??= new Anthropic();

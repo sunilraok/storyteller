@@ -1,5 +1,5 @@
 import { corpus, getPassage } from "@/lib/corpus/db";
-import { checkFidelity, toSourceRefs, type FidelityResult } from "@/lib/claude";
+import { checkFidelity, claudeConfigured, MISSING_KEY_MESSAGE, toSourceRefs, type FidelityResult } from "@/lib/claude";
 import type { Passage } from "@/lib/corpus/parse";
 import { guard } from "@/lib/guard";
 
@@ -16,6 +16,8 @@ export async function POST(req: Request) {
   if (passageIds.length > 40) {
     return Response.json({ error: "Too many passages" }, { status: 400 });
   }
+
+  if (!claudeConfigured()) return Response.json({ error: MISSING_KEY_MESSAGE }, { status: 503 });
 
   const g = await guard("verify");
   if (g instanceof Response) return g;

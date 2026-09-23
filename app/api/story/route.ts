@@ -1,6 +1,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { corpus, CorpusMissingError, getSections, search } from "@/lib/corpus/db";
 import {
+  claudeConfigured,
+  MISSING_KEY_MESSAGE,
   narrate,
   questionInstruction,
   searchKeywords,
@@ -34,6 +36,8 @@ export async function POST(req: Request) {
   const question = body.question?.trim().slice(0, 500);
   if (body.storyId && !story) return Response.json({ error: "Unknown story" }, { status: 404 });
   if (!story && !question) return Response.json({ error: "Provide storyId or question" }, { status: 400 });
+
+  if (!claudeConfigured()) return Response.json({ error: MISSING_KEY_MESSAGE }, { status: 503 });
 
   const g = await guard("narrate");
   if (g instanceof Response) return g;
@@ -79,7 +83,8 @@ async function* releasing<T>(events: AsyncGenerator<T>, release: () => Promise<v
 }
 
 function errorMessage(e: unknown): string {
-  if (e instanceof Anthropic.AuthenticationError) return "Anthropic API key is missing or invalid (ANTHROPIC_API_KEY).";
+  if (e instanceof Anthropic.AuthenticationError) return "The Claude API key (ANTHROPIC_API_KEY) was rejected; check that it is correct.";
+  if (e instanceof Error && /Could not resolve authentication method/.test(e.message)) return MISSING_KEY_MESSAGE;
   if (e instanceof Anthropic.RateLimitError) return "Rate limited by the Claude API; please try again shortly.";
   if (e instanceof Anthropic.APIError) return `Claude API error (${e.status}): ${e.message}`;
   return e instanceof Error ? e.message : String(e);
