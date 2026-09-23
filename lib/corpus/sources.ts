@@ -14,8 +14,6 @@ export interface BookDef {
   nameKn: string;
   /** Regex matched against a normalized heading line (see normalizeHeading). */
   heading: RegExp;
-  /** Not present in the Gutenberg edition, so ingest does not require it. */
-  notInEdition?: boolean;
 }
 
 export interface SourceDef {
@@ -78,9 +76,9 @@ export const SOURCES: Record<WorkId, SourceDef> = {
       parva("anushasana", "Anuśāsana Parva", "ಅನುಶಾಸನ ಪರ್ವ", "(?:ANUSASANA|ANUSHASANA)"),
       parva("ashvamedhika", "Āśvamedhika Parva", "ಅಶ್ವಮೇಧಿಕ ಪರ್ವ", "(?:ASWAMEDHA|ASWAMEDHIKA|ASHVAMEDHIKA)"),
       parva("ashramavasika", "Āśramavāsika Parva", "ಆಶ್ರಮವಾಸಿಕ ಪರ್ವ", "(?:ASRAMAVASIKA|ASHRAMAVASIKA)"),
-      { ...parva("mausala", "Mausala Parva", "ಮೌಸಲ ಪರ್ವ", "MAUSALA"), notInEdition: true },
-      { ...parva("mahaprasthanika", "Mahāprasthānika Parva", "ಮಹಾಪ್ರಸ್ಥಾನಿಕ ಪರ್ವ", "MAHAPRASTHANIKA"), notInEdition: true },
-      { ...parva("svargarohana", "Svargārohaṇa Parva", "ಸ್ವರ್ಗಾರೋಹಣ ಪರ್ವ", "(?:SVARGAROHANIKA|SWARGAROHANIKA|SVARGAROHANA)"), notInEdition: true },
+      parva("mausala", "Mausala Parva", "ಮೌಸಲ ಪರ್ವ", "MAUSALA"),
+      parva("mahaprasthanika", "Mahāprasthānika Parva", "ಮಹಾಪ್ರಸ್ಥಾನಿಕ ಪರ್ವ", "MAHAPRASTHANIKA"),
+      parva("svargarohana", "Svargārohaṇa Parva", "ಸ್ವರ್ಗಾರೋಹಣ ಪರ್ವ", "(?:SVARGAROHANIKA|SWARGAROHANIKA|SVARGAROHANA)"),
     ],
   },
   ramayana: {
