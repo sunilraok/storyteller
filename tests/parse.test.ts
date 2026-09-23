@@ -90,3 +90,14 @@ describe("chunkSection", () => {
     expect(parts.every((p) => p.text.split(" ").length <= 600)).toBe(true);
   });
 });
+
+describe("book boundaries across volumes", () => {
+  it("never merges a new book with an unrecognised heading into the previous one", () => {
+    const vol1 = `ADI PARVA\n\nSECTION I\n\nThe first section of the Adi Parva with enough text to count.\n\nSECTION II\n\nThe second section of the Adi Parva with enough text to count.`;
+    const vol2 = `UNRECOGNISED HEADING FOR BOOK EIGHT\n\nSECTION I\n\nThe first section of a book whose heading did not parse.\n\nSABHA PARVA\n\nSECTION I\n\nThe assembly hall section with enough text to count here.`;
+    const { sections, warnings } = parseWork("mahabharata", [vol1, vol2]);
+    expect(sections.map((s) => `${s.book}:${s.section}`)).toEqual(["adi:1", "adi:2", "sabha:1"]);
+    expect(sections[0].text).not.toContain("did not parse");
+    expect(warnings.join("\n")).toMatch(/numbering restarted after adi/);
+  });
+});

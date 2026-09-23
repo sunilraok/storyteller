@@ -78,13 +78,16 @@ function cleanBody(lines: string[]): string {
 /**
  * Split one Gutenberg volume into sections.
  *
- * `initialBook` lets a volume continue a book begun in the previous volume.
- * Text before the first recognised book heading is ignored (title pages, prefaces).
+ * `initialBook` lets a volume continue a book begun in the previous volume, and
+ * `prior` holds sections already parsed from earlier volumes so duplicates are
+ * detected across volume boundaries. Text before the first recognised book
+ * heading is ignored (title pages, prefaces).
  */
 export function parseVolume(
   work: WorkId,
   raw: string,
   initialBook?: string,
+  prior: Section[] = [],
 ): ParseReport & { lastBook?: string } {
   const { books } = SOURCES[work];
   const lines = stripGutenbergBoilerplate(raw).split("\n");
@@ -94,7 +97,7 @@ export function parseVolume(
   let book = initialBook;
   let subParva: string | undefined;
   let current: { section: number; subParva?: string; lines: string[] } | null = null;
-  const seen = new Set<string>();
+  const seen = new Set(prior.map((s) => `${s.book}:${s.section}`));
 
   const flush = () => {
     if (!current || !book) return;
@@ -105,7 +108,7 @@ export function parseVolume(
     } else if (seen.has(key)) {
       // A repeated section number inside one book usually means a missed book heading.
       warnings.push(`duplicate ${work} ${book} §${current.section}; appended to earlier text`);
-      const prev = sections.find((s) => s.book === book && s.section === current!.section);
+      const prev = [...prior, ...sections].find((s) => s.book === book && s.section === current!.section);
       if (prev) prev.text += "\n\n" + text;
     } else {
       seen.add(key);
@@ -127,6 +130,12 @@ export function parseVolume(
     if (sec) {
       flush();
       const n = /^\d+$/.test(sec[1]) ? Number(sec[1]) : romanToInt(sec[1]);
+      if (n === 1 && book && seen.has(`${book}:1`)) {
+        // Numbering restarted without a recognised book heading: a new book began
+        // whose heading we could not parse. Never merge it into the previous book.
+        warnings.push(`${work}: section numbering restarted after ${book} without a recognised book heading; skipped until the next book heading`);
+        book = undefined;
+      }
       if (n && book) current = { section: n, subParva, lines: [] };
       continue;
     }
@@ -147,7 +156,7 @@ export function parseWork(work: WorkId, volumes: string[]): ParseReport {
   const warnings: string[] = [];
   let book: string | undefined;
   for (const raw of volumes) {
-    const r = parseVolume(work, raw, book);
+    const r = parseVolume(work, raw, book, all);
     all.push(...r.sections);
     warnings.push(...r.warnings);
     book = r.lastBook;
