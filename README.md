@@ -36,7 +36,15 @@ npm run dev                       # http://localhost:3000
 
 `corpus:ingest` prints how many sections it indexed for each book. It also
 checks that every story's pinned range contains the names that story expects.
-If a pin shows ✗, correct its section range in `data/stories.json`.
+The ingest fails, exits non-zero, and leaves any existing `data/corpus.db` in
+place if any of these happen:
+
+- a volume is missing;
+- a book yields no sections;
+- a work parses far fewer sections than the translation contains;
+- a story pin shows ✗.
+
+To fix a failed pin, correct that story's section range in `data/stories.json`.
 
 If Project Gutenberg is unreachable, download the plain-text files listed in
 `corpus/SOURCES.md` by hand and save them as `corpus/raw/<work>-<id>.txt`.

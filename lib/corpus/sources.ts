@@ -27,6 +27,11 @@ export interface SourceDef {
   /** Label for a chapter unit in this work ("Section" for Ganguli, "Sarga" for Dutt). */
   chapterLabel: string;
   chapterLabelKn: string;
+  /**
+   * Sanity floor for a full ingest (~90% of the chapters in the translation).
+   * Fewer parsed sections means a truncated download or a parser mismatch.
+   */
+  minSections: number;
   books: BookDef[];
 }
 
@@ -54,6 +59,7 @@ export const SOURCES: Record<WorkId, SourceDef> = {
     gutenbergIds: [15474, 15475, 15476, 15477],
     chapterLabel: "Section",
     chapterLabelKn: "ಅಧ್ಯಾಯ",
+    minSections: 1900, // Ganguli has ~2,100 sections
     books: [
       parva("adi", "Ādi Parva", "ಆದಿ ಪರ್ವ", "ADI"),
       parva("sabha", "Sabhā Parva", "ಸಭಾ ಪರ್ವ", "SABHA"),
@@ -84,6 +90,7 @@ export const SOURCES: Record<WorkId, SourceDef> = {
     gutenbergIds: [57265, 57826, 60188, 62496],
     chapterLabel: "Sarga",
     chapterLabelKn: "ಸರ್ಗ",
+    minSections: 580, // Dutt has ~645 sargas
     books: [
       kanda("bala", "Bāla Kāṇḍa", "ಬಾಲ ಕಾಂಡ", "BALA"),
       kanda("ayodhya", "Ayodhyā Kāṇḍa", "ಅಯೋಧ್ಯಾ ಕಾಂಡ", "AYODHYA"),
