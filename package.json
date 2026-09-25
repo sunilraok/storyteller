@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "corpus:fetch": "tsx scripts/fetch-corpus.ts",
-    "corpus:ingest": "tsx scripts/ingest.ts"
+    "corpus:ingest": "tsx scripts/ingest.ts",
+    "story:export": "tsx scripts/story-export.ts",
+    "story:check": "tsx scripts/story-check.ts",
+    "story:audio": "tsx --env-file-if-exists=.env.local scripts/story-audio.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
