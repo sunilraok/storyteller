@@ -1,0 +1,39 @@
+{
+  "name": "storyteller",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "corpus:fetch": "tsx scripts/fetch-corpus.ts",
+    "corpus:ingest": "tsx scripts/ingest.ts",
+    "story:export": "tsx scripts/story-export.ts",
+    "story:check": "tsx scripts/story-check.ts",
+    "story:audio": "tsx --env-file-if-exists=.env.local scripts/story-audio.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "better-sqlite3": "^13.0.3",
+    "next": "16.3.6",
+    "next-auth": "^5.0.0-beta.32",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^22.20.4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vitest": "^5.0.1"
+  }
+}

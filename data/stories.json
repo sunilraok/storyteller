@@ -1,0 +1,65 @@
+[
+  {
+    "id": "churning-of-the-ocean",
+    "title": { "en": "The Churning of the Ocean", "kn": "ಸಮುದ್ರ ಮಥನ" },
+    "summary": {
+      "en": "Gods and Asuras churn the ocean with Mount Mandara for the nectar of immortality.",
+      "kn": "ಅಮೃತಕ್ಕಾಗಿ ದೇವತೆಗಳು ಮತ್ತು ಅಸುರರು ಮಂದರ ಪರ್ವತದಿಂದ ಸಮುದ್ರವನ್ನು ಕಡೆಯುತ್ತಾರೆ."
+    },
+    "source": { "work": "mahabharata", "book": "adi", "from": 17, "to": 19, "expect": ["Mandara", "Amrita"] }
+  },
+  {
+    "id": "bhishmas-vow",
+    "title": { "en": "Bhishma's Vow", "kn": "ಭೀಷ್ಮ ಪ್ರತಿಜ್ಞೆ" },
+    "summary": {
+      "en": "Devavrata renounces the throne and marriage so that his father Santanu may marry Satyavati.",
+      "kn": "ತಂದೆ ಶಂತನು ಸತ್ಯವತಿಯನ್ನು ಮದುವೆಯಾಗಲೆಂದು ದೇವವ್ರತನು ರಾಜ್ಯ ಮತ್ತು ವಿವಾಹವನ್ನು ತ್ಯಜಿಸುತ್ತಾನೆ."
+    },
+    "source": { "work": "mahabharata", "book": "adi", "from": 100, "to": 100, "expect": ["Satyavati", "Devavrata"] }
+  },
+  {
+    "id": "ekalavya",
+    "title": { "en": "Ekalavya", "kn": "ಏಕಲವ್ಯ" },
+    "summary": {
+      "en": "A Nishada prince learns archery before a clay image of Drona, who then asks for his thumb.",
+      "kn": "ದ್ರೋಣರ ಮಣ್ಣಿನ ಮೂರ್ತಿಯ ಮುಂದೆ ಬಿಲ್ವಿದ್ಯೆ ಕಲಿತ ನಿಷಾದ ರಾಜಕುಮಾರ; ದ್ರೋಣರು ಅವನ ಹೆಬ್ಬೆರಳನ್ನು ಗುರುದಕ್ಷಿಣೆಯಾಗಿ ಕೇಳುತ್ತಾರೆ."
+    },
+    "source": { "work": "mahabharata", "book": "adi", "from": 132, "to": 134, "expect": ["Ekalavya"] }
+  },
+  {
+    "id": "savitri-satyavan",
+    "title": { "en": "Savitri and Satyavan", "kn": "ಸಾವಿತ್ರಿ ಮತ್ತು ಸತ್ಯವಾನ" },
+    "summary": {
+      "en": "Savitri follows Yama, the lord of death, and wins back the life of her husband.",
+      "kn": "ಸಾವಿತ್ರಿಯು ಯಮನನ್ನು ಹಿಂಬಾಲಿಸಿ ತನ್ನ ಪತಿಯ ಪ್ರಾಣವನ್ನು ಮರಳಿ ಪಡೆಯುತ್ತಾಳೆ."
+    },
+    "source": { "work": "mahabharata", "book": "vana", "from": 292, "to": 298, "expect": ["Savitri", "Satyavan", "Yama"] }
+  },
+  {
+    "id": "nala-damayanti-swayamvara",
+    "title": { "en": "Nala and Damayanti: The Swayamvara", "kn": "ನಳ ದಮಯಂತಿ: ಸ್ವಯಂವರ" },
+    "summary": {
+      "en": "A golden swan carries messages of love, and Damayanti chooses Nala over the gods themselves.",
+      "kn": "ಹಂಸವು ಪ್ರೇಮ ಸಂದೇಶವನ್ನು ತರುತ್ತದೆ; ದಮಯಂತಿ ದೇವತೆಗಳನ್ನೂ ಬಿಟ್ಟು ನಳನನ್ನು ವರಿಸುತ್ತಾಳೆ."
+    },
+    "source": { "work": "mahabharata", "book": "vana", "from": 53, "to": 57, "expect": ["Damayanti", "Nala", "swan"] }
+  },
+  {
+    "id": "breaking-of-the-bow",
+    "title": { "en": "Rama Breaks Shiva's Bow", "kn": "ಶಿವಧನುಸ್ಸು ಭಂಗ" },
+    "summary": {
+      "en": "At Janaka's court in Mithila, Rama lifts and breaks the great bow and wins Sita's hand.",
+      "kn": "ಮಿಥಿಲೆಯ ಜನಕನ ಆಸ್ಥಾನದಲ್ಲಿ ರಾಮನು ಮಹಾಧನುಸ್ಸನ್ನು ಎತ್ತಿ ಮುರಿದು ಸೀತೆಯನ್ನು ವರಿಸುತ್ತಾನೆ."
+    },
+    "source": { "work": "ramayana", "book": "bala", "from": 66, "to": 67, "expect": ["Janaka", "bow"] }
+  },
+  {
+    "id": "hanumans-leap",
+    "title": { "en": "Hanuman's Leap to Lanka", "kn": "ಹನುಮಂತನ ಸಮುದ್ರ ಲಂಘನ" },
+    "summary": {
+      "en": "Hanuman springs from Mount Mahendra and crosses the ocean in search of Sita.",
+      "kn": "ಸೀತೆಯನ್ನು ಹುಡುಕುತ್ತಾ ಹನುಮಂತನು ಮಹೇಂದ್ರ ಪರ್ವತದಿಂದ ಹಾರಿ ಸಮುದ್ರವನ್ನು ದಾಟುತ್ತಾನೆ."
+    },
+    "source": { "work": "ramayana", "book": "sundara", "from": 1, "to": 1, "expect": ["Mahendra", "ocean"] }
+  }
+]

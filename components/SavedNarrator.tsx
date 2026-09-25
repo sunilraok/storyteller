@@ -1,0 +1,54 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import type { Audience } from "@/lib/claude";
+import { t, type Lang } from "@/lib/i18n";
+import type { SavedVersion } from "@/lib/saved";
+import { AudioPlayer } from "./AudioPlayer";
+import { applyEvent, initialNarration } from "./narration";
+import { AudienceToggle, FidelityPanel, NarrationText, SourcesPanel } from "./NarrationView";
+
+/** Shows a pre-generated narration: no model calls, audio from files or the browser's voice. */
+export function SavedNarrator({ lang, versions }: { lang: Lang; versions: Partial<Record<Audience, SavedVersion>> }) {
+  const [audience, setAudience] = useState<Audience>(versions.child || !versions.adult ? "child" : "adult");
+  const [openSource, setOpenSource] = useState<number | null>(null);
+  const version = versions[audience];
+  const state = useMemo(
+    () => (version ? version.events.reduce(applyEvent, initialNarration()) : initialNarration()),
+    [version],
+  );
+  const fidelity = version?.fidelity ?? { status: "idle" as const };
+  const flagged = fidelity.status === "checked" ? fidelity.issues.map((i) => i.sentence.trim()).filter(Boolean) : [];
+
+  return (
+    <section className="mt-6">
+      <AudienceToggle
+        lang={lang}
+        audience={audience}
+        onChange={(a) => {
+          setAudience(a);
+          setOpenSource(null);
+        }}
+      />
+      {!version ? (
+        <p role="status" className="mt-6 rounded-lg border border-border p-3 text-sm text-muted">
+          {t(lang, "notPrepared")}
+        </p>
+      ) : (
+        <>
+          <NarrationText lang={lang} state={state} flagged={flagged} onCite={setOpenSource} />
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <AudioPlayer key={audience} text={version.text} lang={lang} urls={version.audio} serverTts={false} />
+          </div>
+          {version.fidelity && (
+            <div className="mt-2 text-sm">
+              <span className="text-muted">{t(lang, "fidelityRecorded")}:</span>
+              <FidelityPanel lang={lang} fidelity={version.fidelity} />
+            </div>
+          )}
+          <SourcesPanel lang={lang} state={state} open={openSource} onToggle={setOpenSource} />
+        </>
+      )}
+    </section>
+  );
+}
