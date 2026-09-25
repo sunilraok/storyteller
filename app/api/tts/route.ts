@@ -1,10 +1,13 @@
 import { isLang } from "@/lib/i18n";
 import { guard } from "@/lib/guard";
+import { LIVE_DISABLED, liveMode } from "@/lib/mode";
 import { synthesizeCached, TtsNotConfiguredError } from "@/lib/tts";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  // Paid endpoints are off unless live narration is explicitly enabled.
+  if (!liveMode()) return Response.json(LIVE_DISABLED, { status: 404 });
   const { text, lang, voice } = (await req.json().catch(() => ({}))) as {
     text?: string;
     lang?: string;

@@ -2,10 +2,13 @@ import { corpus, getPassage } from "@/lib/corpus/db";
 import { checkFidelity, claudeConfigured, MISSING_KEY_MESSAGE, toSourceRefs, type FidelityResult } from "@/lib/claude";
 import type { Passage } from "@/lib/corpus/parse";
 import { guard } from "@/lib/guard";
+import { LIVE_DISABLED, liveMode } from "@/lib/mode";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
+  // Paid endpoints are off unless live narration is explicitly enabled.
+  if (!liveMode()) return Response.json(LIVE_DISABLED, { status: 404 });
   const { passageIds, narration } = (await req.json().catch(() => ({}))) as {
     passageIds?: string[];
     narration?: string;

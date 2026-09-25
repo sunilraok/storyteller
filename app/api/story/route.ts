@@ -14,6 +14,7 @@ import {
 import { isLang } from "@/lib/i18n";
 import { ndjsonResponse } from "@/lib/ndjson";
 import { guard } from "@/lib/guard";
+import { LIVE_DISABLED, liveMode } from "@/lib/mode";
 import { getStory } from "@/lib/stories";
 
 export const runtime = "nodejs";
@@ -29,6 +30,8 @@ interface Body {
 }
 
 export async function POST(req: Request) {
+  // Paid endpoints are off unless live narration is explicitly enabled.
+  if (!liveMode()) return Response.json(LIVE_DISABLED, { status: 404 });
   const body = (await req.json().catch(() => ({}))) as Body;
   const lang = isLang(body.lang) ? body.lang : "kn";
   const audience: Audience = body.audience === "adult" ? "adult" : "child";

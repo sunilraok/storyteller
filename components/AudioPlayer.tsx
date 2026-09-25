@@ -9,7 +9,19 @@ import { splitForSpeech } from "@/lib/text";
  * the current one plays. Falls back to the browser's speechSynthesis when no TTS
  * provider is configured on the server.
  */
-export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
+export function AudioPlayer({
+  text,
+  lang,
+  urls,
+  serverTts = true,
+}: {
+  text: string;
+  lang: Lang;
+  /** Pre-generated audio files to play in order, instead of synthesizing. */
+  urls?: string[];
+  /** Whether /api/tts may be used; otherwise fall back to the browser's voice. */
+  serverTts?: boolean;
+}) {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** Stops whichever playback run is current; each run installs its own. */
@@ -25,18 +37,30 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
     const ctrl = new AbortController();
     const { signal } = ctrl;
     const audio = new Audio();
-    const urls: string[] = [];
+    const objectUrls: string[] = [];
     const stop = () => {
       if (signal.aborted) return;
       ctrl.abort();
       audio.pause();
       audio.removeAttribute("src");
       window.speechSynthesis?.cancel();
-      urls.forEach((u) => URL.revokeObjectURL(u));
+      objectUrls.forEach((u) => URL.revokeObjectURL(u));
       // Only reset the button if no newer run has taken over.
       if (stopRef.current === stop) setPlaying(false);
     };
     stopRef.current = stop;
+
+    const playUrl = async (url: string) => {
+      audio.src = url;
+      await audio.play();
+      signal.throwIfAborted();
+      await new Promise<void>((resolve, reject) => {
+        audio.onended = () => resolve();
+        audio.onerror = () => reject(new Error("playback failed"));
+        signal.addEventListener("abort", () => resolve(), { once: true });
+      });
+      signal.throwIfAborted();
+    };
 
     const fetchChunk = async (chunk: string): Promise<string | "fallback"> => {
       const res = await fetch("/api/tts", {
@@ -54,12 +78,23 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
       const blob = await res.blob();
       signal.throwIfAborted();
       const url = URL.createObjectURL(blob);
-      urls.push(url);
+      objectUrls.push(url);
       return url;
     };
 
     try {
+      if (urls?.length) {
+        for (const url of urls) {
+          signal.throwIfAborted();
+          await playUrl(url);
+        }
+        return;
+      }
       const chunks = splitForSpeech(text);
+      if (!serverTts) {
+        await speakWithBrowser(chunks, lang, signal);
+        return;
+      }
       let next = fetchChunk(chunks[0]);
       for (let i = 0; i < chunks.length; i++) {
         const url = await next;
@@ -72,15 +107,7 @@ export function AudioPlayer({ text, lang }: { text: string; lang: Lang }) {
           next = fetchChunk(chunks[i + 1]);
           next.catch(() => {}); // surfaced when awaited on the next iteration
         }
-        audio.src = url;
-        await audio.play();
-        signal.throwIfAborted();
-        await new Promise<void>((resolve, reject) => {
-          audio.onended = () => resolve();
-          audio.onerror = () => reject(new Error("playback failed"));
-          signal.addEventListener("abort", () => resolve(), { once: true });
-        });
-        signal.throwIfAborted();
+        await playUrl(url);
       }
     } catch (e) {
       if (!signal.aborted) setError((e as Error).message);

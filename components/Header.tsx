@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { signIn, signOut } from "@/auth";
 import { currentCaller } from "@/lib/guard";
+import { liveMode } from "@/lib/mode";
 import { LANGUAGES, t, type Lang } from "@/lib/i18n";
 
 export async function Header({ lang, path }: { lang: Lang; path: string }) {
-  const caller = await currentCaller();
+  // Sign-in only matters when the paid live features are enabled.
+  const live = liveMode();
+  const caller = live ? await currentCaller() : null;
   const here = `${path}?lang=${lang}`;
   return (
     <header className="border-b border-border bg-surface">
@@ -16,9 +19,11 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
           <Link href={`/?lang=${lang}`} className="hover:text-accent">
             {t(lang, "stories")}
           </Link>
-          <Link href={`/ask?lang=${lang}`} className="hover:text-accent">
-            {t(lang, "ask")}
-          </Link>
+          {live && (
+            <Link href={`/ask?lang=${lang}`} className="hover:text-accent">
+              {t(lang, "ask")}
+            </Link>
+          )}
           <span className="flex overflow-hidden rounded-full border border-border" aria-label={t(lang, "language")}>
             {(Object.keys(LANGUAGES) as Lang[]).map((l) => (
               <Link
@@ -31,7 +36,7 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
               </Link>
             ))}
           </span>
-          {caller ? (
+          {!live ? null : caller ? (
             <form
               action={async () => {
                 "use server";

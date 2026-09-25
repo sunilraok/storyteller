@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/story": ["./data/corpus.db"],
     "/api/verify": ["./data/corpus.db"],
+    // Saved narrations are read from disk when a story page renders.
+    "/story/[id]": ["./data/narrations/**/*"],
   },
 };
 

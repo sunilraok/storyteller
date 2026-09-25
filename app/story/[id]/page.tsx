@@ -2,6 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/Header";
 import { Narrator } from "@/components/Narrator";
+import { SavedNarrator } from "@/components/SavedNarrator";
+import { liveMode } from "@/lib/mode";
+import { loadSavedStory } from "@/lib/savedStore";
 import { getBook, SOURCES } from "@/lib/corpus/sources";
 import { t } from "@/lib/i18n";
 import { langFrom } from "@/lib/params";
@@ -35,7 +38,11 @@ export default async function StoryPage({
           · {unit} {from === to ? from : `${from}–${to}`}
         </p>
         <p className="mt-4 text-muted">{story.summary[lang]}</p>
-        <Narrator key={lang} lang={lang} request={{ storyId: story.id }} />
+        {liveMode() ? (
+          <Narrator key={lang} lang={lang} request={{ storyId: story.id }} />
+        ) : (
+          <SavedNarrator key={lang} lang={lang} versions={loadSavedStory(story.id, lang)} />
+        )}
       </main>
       <Footer lang={lang} />
     </>

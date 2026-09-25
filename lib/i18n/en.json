@@ -30,5 +30,8 @@
   "signIn": "Sign in with Google",
   "signOut": "Sign out",
   "signInRequired": "Please sign in with Google to hear stories.",
-  "quotaExceeded": "You have reached today's limit. Please come back tomorrow."
+  "quotaExceeded": "You have reached today's limit. Please come back tomorrow.",
+  "notPrepared": "This retelling has not been prepared yet.",
+  "liveDisabled": "Questions are not available on this site yet. Please choose a story instead.",
+  "fidelityRecorded": "Faithfulness review"
 }
