@@ -2,6 +2,7 @@ import Link from "next/link";
 import { signIn, signOut } from "@/auth";
 import { currentCaller } from "@/lib/guard";
 import { liveMode } from "@/lib/mode";
+import { ThemeToggle } from "./ThemeToggle";
 import { LANGUAGES, t, type Lang } from "@/lib/i18n";
 
 export async function Header({ lang, path }: { lang: Lang; path: string }) {
@@ -36,6 +37,7 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
               </Link>
             ))}
           </span>
+          <ThemeToggle lang={lang} />
           {!live ? null : caller ? (
             <form
               action={async () => {
