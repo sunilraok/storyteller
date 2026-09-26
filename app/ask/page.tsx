@@ -13,7 +13,7 @@ export default async function AskPage({
   return (
     <>
       <Header lang={lang} path="/ask" />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
+      <main lang={lang} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-10">
         <h1 className="font-serif text-3xl font-semibold">{t(lang, "ask")}</h1>
         {liveMode() ? (
           <AskForm key={lang} lang={lang} />

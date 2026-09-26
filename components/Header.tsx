@@ -11,32 +11,37 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
   const caller = live ? await currentCaller() : null;
   const here = `${path}?lang=${lang}`;
   return (
-    <header className="border-b border-border bg-surface">
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <Link href={`/?lang=${lang}`} className="font-serif text-2xl font-semibold text-accent">
+    <header lang={lang} className="border-b border-border bg-surface">
+      <div className="mx-auto flex min-h-16 max-w-3xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3">
+        <Link
+          href={`/?lang=${lang}`}
+          className="font-serif text-2xl font-semibold leading-none tracking-tight text-accent"
+        >
           {t(lang, "appName")}
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href={`/?lang=${lang}`} className="hover:text-accent">
+        <nav className="flex items-center gap-2 sm:gap-3" aria-label={t(lang, "stories")}>
+          <Link href={`/?lang=${lang}`} className="control px-3 font-medium text-foreground hover:text-accent">
             {t(lang, "stories")}
           </Link>
           {live && (
-            <Link href={`/ask?lang=${lang}`} className="hover:text-accent">
+            <Link href={`/ask?lang=${lang}`} className="control px-3 font-medium text-foreground hover:text-accent">
               {t(lang, "ask")}
             </Link>
           )}
-          <span className="flex overflow-hidden rounded-full border border-border" aria-label={t(lang, "language")}>
+          <div className="segmented" role="group" aria-label={t(lang, "language")}>
             {(Object.keys(LANGUAGES) as Lang[]).map((l) => (
               <Link
                 key={l}
                 href={`${path}?lang=${l}`}
+                lang={l}
+                hrefLang={l}
                 aria-current={l === lang ? "true" : undefined}
-                className={`px-3 py-1 ${l === lang ? "bg-accent text-surface" : "hover:bg-accent-soft"}`}
+                className="segment font-medium"
               >
                 {LANGUAGES[l].label}
               </Link>
             ))}
-          </span>
+          </div>
           <ThemeToggle lang={lang} />
           {!live ? null : caller ? (
             <form
@@ -45,7 +50,7 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
                 await signOut({ redirectTo: here });
               }}
             >
-              <button className="text-muted hover:text-accent" title={caller.email ?? undefined}>
+              <button className="control px-3 text-muted hover:text-accent" title={caller.email ?? undefined}>
                 {t(lang, "signOut")}
               </button>
             </form>
@@ -56,9 +61,7 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
                 await signIn("google", { redirectTo: here });
               }}
             >
-              <button className="rounded-full border border-accent px-3 py-1 text-accent hover:bg-accent-soft">
-                {t(lang, "signIn")}
-              </button>
+              <button className="control border border-accent text-accent hover:bg-accent-soft">{t(lang, "signIn")}</button>
             </form>
           )}
         </nav>
@@ -69,8 +72,8 @@ export async function Header({ lang, path }: { lang: Lang; path: string }) {
 
 export function Footer({ lang }: { lang: Lang }) {
   return (
-    <footer className="mt-auto border-t border-border px-4 py-6 text-center text-xs text-muted">
-      {t(lang, "corpusNote")}
+    <footer lang={lang} className="mt-auto border-t border-border px-4 py-6">
+      <p className="mx-auto max-w-3xl text-center text-xs leading-relaxed text-muted">{t(lang, "corpusNote")}</p>
     </footer>
   );
 }

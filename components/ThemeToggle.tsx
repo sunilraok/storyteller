@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { t, type Lang, type MessageKey } from "@/lib/i18n";
 import { nextTheme, parseTheme, THEME_STORAGE_KEY, type ThemePref } from "@/lib/theme";
+import { AutoIcon, MoonIcon, SunIcon, type Icon } from "./Icons";
 
 // The saved preference lives in localStorage and on <html data-theme>; this store
 // lets React read it without a hydration mismatch (the server always renders "system").
@@ -34,21 +35,22 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-const ICON: Record<ThemePref, string> = { system: "◐", light: "☀", dark: "☾" };
+const ICON: Record<ThemePref, Icon> = { system: AutoIcon, light: SunIcon, dark: MoonIcon };
 const LABEL: Record<ThemePref, MessageKey> = { system: "themeSystem", light: "themeLight", dark: "themeDark" };
 
 export function ThemeToggle({ lang }: { lang: Lang }) {
   const pref = useSyncExternalStore(subscribe, read, () => "system" as const);
   const label = `${t(lang, "theme")}: ${t(lang, LABEL[pref])}`;
+  const CurrentIcon = ICON[pref];
   return (
     <button
       type="button"
       onClick={() => write(nextTheme(pref))}
       aria-label={label}
       title={label}
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-base leading-none hover:border-accent hover:text-accent"
+      className="control w-9 border border-border px-0 text-base text-muted hover:border-accent hover:text-accent"
     >
-      <span aria-hidden="true">{ICON[pref]}</span>
+      <CurrentIcon />
     </button>
   );
 }
