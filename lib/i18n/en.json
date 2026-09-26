@@ -33,5 +33,9 @@
   "quotaExceeded": "You have reached today's limit. Please come back tomorrow.",
   "notPrepared": "This retelling has not been prepared yet.",
   "liveDisabled": "Questions are not available on this site yet. Please choose a story instead.",
-  "fidelityRecorded": "Faithfulness review"
+  "fidelityRecorded": "Faithfulness review",
+  "theme": "Theme",
+  "themeSystem": "Auto (device setting)",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

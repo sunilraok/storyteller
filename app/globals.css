@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #faf5ea;
   --surface: #fffdf7;
   --foreground: #2b2118;
@@ -11,8 +12,11 @@
   --highlight: #fbe6b6;
 }
 
+/* Dark palette: applied when the visitor picks Dark, or picks Auto (no
+   data-theme) and the device prefers dark. See components/ThemeToggle.tsx. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --background: #17130f;
     --surface: #211b15;
     --foreground: #efe6d8;
@@ -22,6 +26,18 @@
     --accent-soft: #3a261b;
     --highlight: #4a3a1a;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #17130f;
+  --surface: #211b15;
+  --foreground: #efe6d8;
+  --muted: #a89783;
+  --border: #3a3027;
+  --accent: #e3875a;
+  --accent-soft: #3a261b;
+  --highlight: #4a3a1a;
 }
 
 @theme inline {
