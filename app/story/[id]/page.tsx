@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftIcon } from "@/components/Icons";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/Header";
 import { Narrator } from "@/components/Narrator";
@@ -28,16 +29,20 @@ export default async function StoryPage({
   return (
     <>
       <Header lang={lang} path={`/story/${id}`} />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
-        <Link href={`/?lang=${lang}`} className="text-sm text-muted hover:text-accent">
-          ← {t(lang, "back")}
+      <main lang={lang} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-10">
+        <Link
+          href={`/?lang=${lang}`}
+          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-accent"
+        >
+          <ArrowLeftIcon />
+          {t(lang, "back")}
         </Link>
-        <h1 className="mt-3 font-serif text-3xl font-semibold">{story.title[lang]}</h1>
-        <p className="mt-1 text-sm text-muted">
+        <h1 className="mt-4 font-serif text-3xl font-semibold leading-tight sm:text-4xl">{story.title[lang]}</h1>
+        <p className="mt-2 text-sm text-muted">
           {lang === "kn" ? SOURCES[work].titleKn : SOURCES[work].title} · {lang === "kn" ? bookDef?.nameKn : bookDef?.name}{" "}
           · {unit} {from === to ? from : `${from}–${to}`}
         </p>
-        <p className="mt-4 text-muted">{story.summary[lang]}</p>
+        <p className="mt-4 max-w-2xl leading-relaxed text-muted">{story.summary[lang]}</p>
         {liveMode() ? (
           <Narrator key={lang} lang={lang} request={{ storyId: story.id }} />
         ) : (

@@ -21,31 +21,26 @@ export function SavedNarrator({ lang, versions }: { lang: Lang; versions: Partia
   const flagged = fidelity.status === "checked" ? fidelity.issues.map((i) => i.sentence.trim()).filter(Boolean) : [];
 
   return (
-    <section className="mt-6">
-      <AudienceToggle
-        lang={lang}
-        audience={audience}
-        onChange={(a) => {
-          setAudience(a);
-          setOpenSource(null);
-        }}
-      />
+    <section className="mt-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <AudienceToggle
+          lang={lang}
+          audience={audience}
+          onChange={(a) => {
+            setAudience(a);
+            setOpenSource(null);
+          }}
+        />
+        {version && <AudioPlayer key={audience} text={version.text} lang={lang} urls={version.audio} serverTts={false} />}
+      </div>
       {!version ? (
-        <p role="status" className="mt-6 rounded-lg border border-border p-3 text-sm text-muted">
+        <p role="status" className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm text-muted">
           {t(lang, "notPrepared")}
         </p>
       ) : (
         <>
           <NarrationText lang={lang} state={state} flagged={flagged} onCite={setOpenSource} />
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            <AudioPlayer key={audience} text={version.text} lang={lang} urls={version.audio} serverTts={false} />
-          </div>
-          {version.fidelity && (
-            <div className="mt-2 text-sm">
-              <span className="text-muted">{t(lang, "fidelityRecorded")}:</span>
-              <FidelityPanel lang={lang} fidelity={version.fidelity} />
-            </div>
-          )}
+          {version.fidelity && <FidelityPanel lang={lang} fidelity={version.fidelity} label={t(lang, "fidelityRecorded")} />}
           <SourcesPanel lang={lang} state={state} open={openSource} onToggle={setOpenSource} />
         </>
       )}

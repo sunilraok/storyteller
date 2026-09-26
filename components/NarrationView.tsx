@@ -2,6 +2,7 @@
 
 import type { Audience, FidelityResult } from "@/lib/claude";
 import { t, type Lang } from "@/lib/i18n";
+import { CheckIcon } from "./Icons";
 import { toParagraphs, type NarrationState } from "./narration";
 
 export type FidelityState = { status: "idle" } | { status: "checking" } | FidelityResult;
@@ -16,27 +17,26 @@ export function AudienceToggle({
   onChange: (a: Audience) => void;
 }) {
   return (
-    <fieldset className="flex items-center gap-2 text-sm">
+    <fieldset className="flex flex-wrap items-center gap-3">
       <legend className="sr-only">{t(lang, "audience")}</legend>
-      <span className="text-muted">{t(lang, "audience")}:</span>
-      {(["child", "adult"] as const).map((a) => (
-        <label
-          key={a}
-          className={`cursor-pointer rounded-full border px-3 py-1 ${
-            audience === a ? "border-accent bg-accent-soft" : "border-border"
-          }`}
-        >
-          <input
-            type="radio"
-            name="audience"
-            value={a}
-            checked={audience === a}
-            onChange={() => onChange(a)}
-            className="sr-only"
-          />
-          {t(lang, a === "child" ? "audienceChild" : "audienceAdult")}
-        </label>
-      ))}
+      <span aria-hidden="true" className="text-sm text-muted">
+        {t(lang, "audience")}
+      </span>
+      <div className="segmented">
+        {(["child", "adult"] as const).map((a) => (
+          <label key={a} className="segment font-medium">
+            <input
+              type="radio"
+              name="audience"
+              value={a}
+              checked={audience === a}
+              onChange={() => onChange(a)}
+              className="sr-only"
+            />
+            {t(lang, a === "child" ? "audienceChild" : "audienceAdult")}
+          </label>
+        ))}
+      </div>
     </fieldset>
   );
 }
@@ -84,22 +84,40 @@ export function NarrationText({
   );
 }
 
-export function FidelityPanel({ lang, fidelity }: { lang: Lang; fidelity: FidelityState }) {
+export function FidelityPanel({ lang, fidelity, label }: { lang: Lang; fidelity: FidelityState; label?: string }) {
+  const prefix = label ? <span className="font-medium text-foreground">{label}: </span> : null;
   if (fidelity.status === "checking") {
-    return <p className="mt-3 animate-pulse text-sm text-muted">{t(lang, "checking")}</p>;
+    return <p className="mt-4 animate-pulse text-sm text-muted">{t(lang, "checking")}</p>;
   }
   if (fidelity.status === "indeterminate") {
     return (
-      <p role="status" className="mt-3 rounded-lg border border-border p-3 text-sm">
-        ? {t(lang, "fidelityUnknown")} <span className="text-muted">({fidelity.reason})</span>
+      <p role="status" className="mt-4 flex items-start gap-2 text-sm text-muted">
+        <span aria-hidden="true" className="mt-px text-base leading-none">?</span>
+        <span>
+          {prefix}
+          {t(lang, "fidelityUnknown")} ({fidelity.reason})
+        </span>
       </p>
     );
   }
   if (fidelity.status !== "checked") return null;
-  if (!fidelity.issues.length) return <p className="mt-3 text-sm">✓ {t(lang, "allSupported")}</p>;
+  if (!fidelity.issues.length) {
+    return (
+      <p className="mt-4 flex items-start gap-2 text-sm text-muted">
+        <CheckIcon className="mt-px shrink-0 text-accent" />
+        <span>
+          {prefix}
+          {t(lang, "allSupported")}
+        </span>
+      </p>
+    );
+  }
   return (
-    <div className="mt-3 rounded-lg border border-border bg-highlight/40 p-3 text-sm">
-      <p className="font-semibold">{t(lang, "unsupported")}:</p>
+    <div className="mt-4 rounded-xl border border-border bg-highlight/40 p-4 text-sm">
+      <p className="font-semibold">
+        {prefix}
+        {t(lang, "unsupported")}
+      </p>
       <ul className="mt-2 list-disc space-y-1 pl-5">
         {fidelity.issues.map((iss, i) => (
           <li key={i}>
@@ -125,16 +143,16 @@ export function SourcesPanel({
   if (!state.sources.length) return null;
   return (
     <aside className="mt-8">
-      <h2 className="mb-2 font-serif text-xl font-semibold">{t(lang, "sources")}</h2>
+      <h2 className="mb-3 font-serif text-xl font-semibold">{t(lang, "sources")}</h2>
       <ol className="space-y-2 text-sm">
         {[...state.sources]
           .sort((a, b) => (state.footnotes.get(a.index) ?? 1e9) - (state.footnotes.get(b.index) ?? 1e9))
           .map((s) => (
-            <li key={s.id} className="rounded-lg border border-border bg-surface">
+            <li key={s.id} className="overflow-hidden rounded-xl border border-border bg-surface">
               <button
                 onClick={() => onToggle(open === s.index ? null : s.index)}
                 aria-expanded={open === s.index}
-                className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left leading-snug hover:bg-accent-soft/40"
               >
                 <span>
                   {state.footnotes.has(s.index) && <span className="mr-2 text-accent">[{state.footnotes.get(s.index)}]</span>}
@@ -145,7 +163,7 @@ export function SourcesPanel({
                 </span>
               </button>
               {open === s.index && (
-                <blockquote lang="en" className="whitespace-pre-line border-t border-border px-3 py-3 font-serif leading-relaxed">
+                <blockquote lang="en" className="whitespace-pre-line border-t border-border px-4 py-3 font-serif leading-relaxed">
                   {s.text}
                 </blockquote>
               )}

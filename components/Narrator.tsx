@@ -109,7 +109,7 @@ export function Narrator({
           <button
             onClick={tell}
             disabled={busy}
-            className="rounded-full bg-accent px-5 py-2 font-semibold text-surface disabled:opacity-60"
+            className="control bg-accent px-5 font-semibold text-surface disabled:opacity-60"
           >
             {status === "idle" ? t(lang, "tell") : t(lang, "retell")}
           </button>
@@ -133,7 +133,7 @@ export function Narrator({
           <button
             onClick={verify}
             disabled={fidelity.status === "checking"}
-            className="rounded-full border border-border px-4 py-1.5 text-sm hover:border-accent disabled:opacity-60"
+            className="control border border-border hover:border-accent disabled:opacity-60"
           >
             {t(lang, "checkFidelity")}
           </button>

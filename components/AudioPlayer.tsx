@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LANGUAGES, t, type Lang } from "@/lib/i18n";
 import { splitForSpeech } from "@/lib/text";
+import { PlayIcon, StopIcon } from "./Icons";
 
 /**
  * Plays a narration chunk by chunk through /api/tts, fetching the next chunk while
@@ -117,12 +118,15 @@ export function AudioPlayer({
   }
 
   return (
-    <span className="flex items-center gap-2">
+    <span className="flex items-center gap-3">
       <button
+        type="button"
         onClick={() => (playing ? stopRef.current() : play())}
-        className="rounded-full border border-accent px-4 py-1.5 text-sm text-accent hover:bg-accent-soft"
+        aria-pressed={playing}
+        className="control border border-accent font-medium text-accent hover:bg-accent-soft"
       >
-        {playing ? `■ ${t(lang, "stop")}` : `▶ ${t(lang, "listen")}`}
+        {playing ? <StopIcon /> : <PlayIcon />}
+        {playing ? t(lang, "stop") : t(lang, "listen")}
       </button>
       {error && (
         <span className="text-xs text-muted" title={error}>

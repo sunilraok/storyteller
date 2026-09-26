@@ -16,7 +16,7 @@ export default async function Home({
   return (
     <>
       <Header lang={lang} path="/" />
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8">
+      <main lang={lang} className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-10">
         <p className="mb-8 font-serif text-lg text-muted">{t(lang, "tagline")}</p>
         {works.map((work) => (
           <section key={work} className="mb-10">

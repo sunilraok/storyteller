@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Noto_Sans_Kannada, Noto_Serif_Kannada } from "next/font/google";
+import { Noto_Sans, Noto_Sans_Kannada, Noto_Serif, Noto_Serif_Kannada } from "next/font/google";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 const ui = Noto_Sans_Kannada({ variable: "--font-ui", subsets: ["kannada", "latin"] });
 const story = Noto_Serif_Kannada({ variable: "--font-story", subsets: ["kannada", "latin"] });
+const uiLatin = Noto_Sans({ variable: "--font-ui-latin", subsets: ["latin", "latin-ext"] });
+const storyLatin = Noto_Serif({ variable: "--font-story-latin", subsets: ["latin", "latin-ext"] });
 
 export const metadata: Metadata = {
   title: "Kathā — Indian epics, told from the source",
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // suppressHydrationWarning: the inline script may set data-theme before React hydrates.
-    <html lang="kn" className={`${ui.variable} ${story.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="kn" className={`${ui.variable} ${story.variable} ${uiLatin.variable} ${storyLatin.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
